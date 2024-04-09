@@ -116,8 +116,7 @@ fn main(){
     // Write the header
     println!("Sample\tGene\tChr\tStart\tEnd\tTag\tLength\tMeanDepth");
     for chrom in bed_chrom_order {
-        let chrom_tree = bed_map.get_mut(&chrom).unwrap(); //Safe to unwrap since it's guaranteed
-        //that we will have a hit
+        let chrom_tree = bed_map.get_mut(&chrom).unwrap(); //Safe to unwrap since it's guaranteed that we will have a hit
         let mut output = chrom_tree.find(0..i64::MAX)
                                 .map(|e| OutputRegion{start:e.interval().start,
                                                         end:e.interval().end,
@@ -125,9 +124,7 @@ fn main(){
                                                     count:e.data().count})
                                 .collect::<Vec<_>>();
 
-        //output.sort_by(|a, b| a.start.cmp(&b.start));
         output.sort();
-
 
         let mut current_gene = "";
         let mut total_length = 0;
@@ -142,7 +139,7 @@ fn main(){
                     let mean_depth = if total_length > 0 { total_count as f64 / total_length as f64} else { 0.0 };
                     println!("{sample_name}\t{current_gene}\t{chrom}\t{current_start}\t{current_end}\tWhole-Gene\t{total_length}\t{mean_depth:.2}");
                 }
-                // Reset for the new gene
+                // Reset
                 current_gene = &region.name;
                 total_length = 0;
                 total_count = 0;
@@ -166,7 +163,8 @@ fn main(){
             total_count += count;
 
         }
-        // At the end of the vector, output the aggregated line for the last gene
+
+        // at the end of the vector, write aggregated line for the last gene
         let mean_depth = if total_length > 0 { total_count as f64 / total_length as f64 } else { 0.0 };
         println!("{sample_name}\t{current_gene}\t{chrom}\t{current_start}\t{current_end}\tWhole-Gene\t{total_length}\t{mean_depth:.2}");
 
