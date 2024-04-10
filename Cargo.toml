@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["Stanislav Zubenko <5831286+Dantistnfs@users.noreply.github.com>"]
 
 [dependencies]
-clap = { version = "4.5.4", features = ["std", "derive"], default-features = false}
+clap = { version = "4.5.4", features = ["derive"]}
 rust-htslib = { version = "0.46.0", default-features = false} 
 bio = { version = "1.6.0" }
 
