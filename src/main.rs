@@ -1,6 +1,7 @@
 use std::io::BufReader;
 use std::fs::File;
 use std::collections::HashMap;
+use std::thread::available_parallelism;
 
 use clap::{Parser};
 
@@ -18,14 +19,16 @@ use bio::bio_types::genome::AbstractInterval;
 #[command(version)]
 #[command(about = "Counts bam coverage of a bed file", long_about = None)]
 struct Cli {
-    #[arg(short='b', long)]
+    #[arg(short='b', long, help="path to the bam file")]
     bam: String,
-    #[arg(short='N', long)]
+    #[arg(short='N', long, help="file name to use in output file")]
     sample_name: String,
-    #[arg(short='p',long)]
+    #[arg(short='p',long, help="path to the bed file")]
     bed: String,
-    #[arg(long)]
+    #[arg(long, default_value="true", help="enable outputting fragment length - 1, same as perl version of seq2c")]
     mimic_perl_output: bool,
+    #[arg(long="threads",default_value="0",help="number of threads to use for bam/cram decompression, default 0 = automatically detect number of cores")]
+    threads: usize,
 }
 
 
@@ -58,8 +61,13 @@ fn main(){
     let sample_name = cli.sample_name;
     let mimic_perl_output = cli.mimic_perl_output;
 
-    let mut bed_map: HashMap<String,IntervalTree<i64, RegionWithName>> = HashMap::new();
+    let bam_threads = if cli.threads == 0 {
+            available_parallelism().expect("Wasn't able to automatically reconize number of threads, please set it by setting --threads argument manually").get()
+        } else {
+            cli.threads
+    };
 
+    let mut bed_map: HashMap<String,IntervalTree<i64, RegionWithName>> = HashMap::new();
 
     let mut bed_chrom_order = Vec::new();
     let mut reader = File::open(cli.bed).map(BufReader::new).map(bed::Reader::new).unwrap();
@@ -76,7 +84,7 @@ fn main(){
 
 
     let mut bam = bam::Reader::from_path(cli.bam).unwrap();
-
+    let _ = bam.set_threads(bam_threads).expect("Error in setting number of threads for loading bam file");
 
     for r in bam.records() {
         let record = r.unwrap();
