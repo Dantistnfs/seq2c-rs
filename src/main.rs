@@ -1,6 +1,5 @@
 use std::io::BufReader;
 use std::fs::File;
-use std::collections::HashMap;
 use std::thread::available_parallelism;
 
 use clap::{Parser};
@@ -9,21 +8,16 @@ use rust_htslib::{bam, bam::Read, bam::record::Cigar};
 use rust_htslib::bam::ext::BamRecordExtensions;
 
 use bio::io::bed;
-//use bio::data_structures::interval_tree::*;
 use bio::bio_types::genome::AbstractInterval;
 
 use std::cell::RefCell;
 
 use coitrees::*;
 use rustc_hash::FxHashMap;
-use std::collections::BTreeMap;
 use indexmap::IndexMap;
 use fnv::FnvBuildHasher;
-use fxhash::FxBuildHasher;
-
 
 type FnvIndexMap<K, V> = IndexMap<K, V, FnvBuildHasher>;
-type FxIndexMap<K, V> = IndexMap<K, V, FxBuildHasher>;
 
 
 #[derive(Parser)]
@@ -100,7 +94,7 @@ fn main(){
     let mut reader = File::open(cli.bed).map(BufReader::new).map(bed::Reader::new).unwrap();
     for record in reader.records() {
         let rec = record.expect("Error reading record.");
-        let node_vec = nodes.entry(rec.chrom().to_string()).or_insert(Vec::new());
+        let node_vec = nodes.entry(rec.chrom().to_string()).or_default();
         node_vec.push(
                         Interval::new(rec.start() as i32, 
                                         rec.end() as i32,
@@ -130,7 +124,7 @@ fn main(){
     eprintln!("Starting processing bam file");
 
     let mut bam = bam::Reader::from_path(cli.bam).unwrap();
-    let _ = bam.set_threads(bam_threads).expect("Error in setting number of threads for loading bam file");
+    bam.set_threads(bam_threads).expect("Error in setting number of threads for loading bam file");
 
     for r in bam.rc_records() {
         let record = r.expect("Failure parsing Bam file");
@@ -174,7 +168,7 @@ fn main(){
         chrom_tree.query(0, i32::MAX, |node| {output.push(OutputRegion{start:node.first as i64,
                                                         end:node.last as i64,
                                                         name:node.metadata.name.clone(),
-                                                        count:node.metadata.count.borrow().clone()})
+                                                        count:*node.metadata.count.borrow()})
                                             });
 
         output.sort();

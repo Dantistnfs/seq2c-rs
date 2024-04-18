@@ -11,11 +11,10 @@ bio = { version = "1.6.0" }
 coitrees = "0.4.0"
 rustc-hash = "1.1.0"
 indexmap = "2.2.6"
-fnv = "*"
-fxhash = "*"
+fnv = "1.0.7"
 
 [profile.release]
 codegen-units = 1
 lto = true
-#strip = true
-debug = true
+strip = true
+#debug = true
