@@ -31,7 +31,7 @@ struct Cli {
     sample_name: String,
     #[arg(short='p',long, help="path to the bed file")]
     bed: String,
-    #[arg(long, default_value="true", help="enable outputting fragment length - 1, same as perl version of seq2c")]
+    #[arg(long, default_value="true", help="(default: true) enable outputting fragment length - 1, same as perl version of seq2c")]
     mimic_perl_output: bool,
     #[arg(long="threads",default_value="0",help="number of threads to use for bam/cram decompression, default 0 = automatically detect number of cores")]
     threads: usize,
@@ -184,7 +184,7 @@ fn main(){
                 if !current_gene.is_empty() {
                     // Calculate and write aggregated data for the previous gene
                     let mean_depth = if total_length > 0 { total_count as f64 / total_length as f64} else { 0.0 };
-                    output_string += format!("{sample_name}\t{current_gene}\t{chrom}\t{current_start}\t{current_end}\tWhole-Gene\t{total_length}\t{mean_depth:.2}").as_str();
+                    output_string += format!("{sample_name}\t{current_gene}\t{chrom}\t{current_start}\t{current_end}\tWhole-Gene\t{total_length}\t{mean_depth:.2}\n").as_str();
                 }
                 // Reset
                 current_gene = &region.name;
@@ -205,7 +205,7 @@ fn main(){
             if region.end > current_end {
                 current_end = region.end;
             }
-            output_string += format!("{sample_name}\t{}\t{chrom}\t{}\t{}\tAmplicon\t{}\t{:.2}", region.name, region.start, region.end, length, count as f64 /length as f64).as_str();
+            output_string += format!("{sample_name}\t{}\t{chrom}\t{}\t{}\tAmplicon\t{}\t{:.2}\n", region.name, region.start, region.end, length, count as f64 /length as f64).as_str();
             total_length += length;
             total_count += count;
 
@@ -213,7 +213,7 @@ fn main(){
 
         // at the end of the vector, write aggregated line for the last gene
         let mean_depth = if total_length > 0 { total_count as f64 / total_length as f64 } else { 0.0 };
-        output_string += format!("{sample_name}\t{current_gene}\t{chrom}\t{current_start}\t{current_end}\tWhole-Gene\t{total_length}\t{mean_depth:.2}").as_str();
+        output_string += format!("{sample_name}\t{current_gene}\t{chrom}\t{current_start}\t{current_end}\tWhole-Gene\t{total_length}\t{mean_depth:.2}\n").as_str();
     }
     print!("{}", output_string);
 
