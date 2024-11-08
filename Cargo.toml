@@ -1,6 +1,6 @@
 [package]
 name = "seq2c-rs"
-version = "0.1.0"
+version = "1.0.1"
 edition = "2021"
 authors = ["Stanislav Zubenko <5831286+Dantistnfs@users.noreply.github.com>"]
 
